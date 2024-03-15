@@ -1,3 +1,4 @@
+import Searchbar from "@/components/Searchbar";
 import Image from "next/image";
 
 const Home = () => {
@@ -28,8 +29,6 @@ const Home = () => {
 
             <Searchbar />
           </div>
-
-          <HeroCarousel />
         </div>
       </section>
     </>
