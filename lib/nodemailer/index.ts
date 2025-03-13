@@ -1,7 +1,9 @@
 "use server";
 
-import { EmailContent, EmailProductInfo, NotificationType } from "@/types";
-import { SendMailOptions, createTransport } from "nodemailer";
+import { EmailProductInfo, NotificationType } from "@/types";
+import nodemailer from "nodemailer";
+import Mail from "nodemailer/lib/mailer";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 const Notification = {
   WELCOME: "WELCOME",
@@ -80,85 +82,31 @@ export async function generateEmailBody(
   return { subject, body };
 }
 
-// Función para crear transportador con configuración segura
-const createSecureTransporter = () => {
-  return createTransport({
-    host: "smtp.office365.com",
-    port: 587,
-    secure: false, // Use TLS
-    auth: {
-      user: "wildsrincon@hotmail.com",
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    tls: {
-      ciphers: "TLSv1.2", // Actualizado de SSLv3 a TLSv1.2
-      rejectUnauthorized: true, // Cambiado a true para mayor seguridad
-    },
-  });
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: process.env.NODE_ENV !== "development",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+  maxConnections: 1,
+} as SMTPTransport.Options);
+
+type SendMailDto = {
+  sender: Mail.Address;
+  receipients: Mail.Address[];
+  subjet: string;
+  body: string;
 };
 
-export const sendEmail = async (
-  emailContent: EmailContent,
-  sendTo: string[]
-) => {
-  // Verificar que los parámetros no estén vacíos
-  if (!emailContent || !sendTo || sendTo.length === 0) {
-    throw new Error("Parámetros de correo inválidos");
-  }
+export const sendEmail = async (dto: SendMailDto) => {
+  const { sender, receipients, subjet, body } = dto;
 
-  const transporter = createSecureTransporter();
-
-  const mailOptions: SendMailOptions = {
-    from: {
-      name: "PriceWise Tracking",
-      address: "wildsrincon@hotmail.com",
-    },
-    to: sendTo,
-    subject: emailContent.subject,
-    html: emailContent.body,
-    // Añadir texto plano como respaldo
-    text: emailContent.body.replace(/<[^>]*>?/gm, ""),
-  };
-
-  try {
-    // Verificar transportador antes de enviar
-    await new Promise((resolve, reject) => {
-      transporter.verify((error: Error | null) => {
-        if (error) {
-          console.error("Error de verificación del transportador:", error);
-          reject(error);
-        } else {
-          resolve(true);
-        }
-      });
-    });
-
-    // Enviar correo
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log("Correo enviado con éxito:", {
-      messageId: info.messageId,
-      accepted: info.accepted,
-      rejected: info.rejected,
-    });
-
-    return info;
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error detallado al enviar correo:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-      });
-    } else {
-      console.error("Error desconocido:", error);
-    }
-
-    // Manejo de errores específicos
-    if ((error as any).code === "ETIMEDOUT") {
-      console.error("Tiempo de conexión agotado");
-    }
-
-    throw error;
-  }
+  return transporter.sendMail({
+    from: sender,
+    to: receipients,
+    subject: subjet,
+    html: body,
+  });
 };
