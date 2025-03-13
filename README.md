@@ -1,4 +1,4 @@
-# Promptopia :robot:
+# PriceScrap :robot:
 
 <h1 align="center">PriceScrap</h1>
 <p align="center"> <img src = "https://i.imgur.com/NLqd7Wl.png" /></p>
