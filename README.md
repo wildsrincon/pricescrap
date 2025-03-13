@@ -1,7 +1,7 @@
 # Promptopia :robot:
 
 <h1 align="center">PriceScrap</h1>
-<p align="center"> <img src = "https://imgur.com/a/jLD1yNU" /></p>
+<p align="center"> <img src = "https://imgur.com/NLqd7Wl" /></p>
 
 <!-- PROJECT SHIELDS -->
 <!--
