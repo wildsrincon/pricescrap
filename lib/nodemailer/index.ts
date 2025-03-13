@@ -1,21 +1,21 @@
-"use server";
+"use server"
 
-import { EmailProductInfo, NotificationType } from "@/types";
-import nodemailer from "nodemailer";
-import Mail from "nodemailer/lib/mailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import { EmailContent, EmailProductInfo, NotificationType } from '@/types';
+import nodemailer from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import Mail from 'nodemailer/lib/mailer';
 
 const Notification = {
-  WELCOME: "WELCOME",
-  CHANGE_OF_STOCK: "CHANGE_OF_STOCK",
-  LOWEST_PRICE: "LOWEST_PRICE",
-  THRESHOLD_MET: "THRESHOLD_MET",
-};
+  WELCOME: 'WELCOME',
+  CHANGE_OF_STOCK: 'CHANGE_OF_STOCK',
+  LOWEST_PRICE: 'LOWEST_PRICE',
+  THRESHOLD_MET: 'THRESHOLD_MET',
+}
 
 export async function generateEmailBody(
   product: EmailProductInfo,
   type: NotificationType
-) {
+  ) {
   const THRESHOLD_PERCENTAGE = 40;
   // Shorten the product title
   const shortenedTitle =
@@ -85,28 +85,25 @@ export async function generateEmailBody(
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
-  secure: process.env.NODE_ENV !== "development",
+  secure: process.env.NODE_ENV !== 'development',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
-  maxConnections: 1,
+  maxConnections: 1
 } as SMTPTransport.Options);
 
-type SendMailDto = {
-  sender: Mail.Address;
-  receipients: Mail.Address[];
-  subjet: string;
-  body: string;
-};
+export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
+  const mailOptions = {
+    from: 'wildsrincon.developer@gmail.com',
+    to: sendTo,
+    html: emailContent.body,
+    subject: emailContent.subject,
+  }
 
-export const sendEmail = async (dto: SendMailDto) => {
-  const { sender, receipients, subjet, body } = dto;
+  return transporter.sendMail(mailOptions, (error: any, info: any) => {
+    if (error) return console.log(error);
 
-  return transporter.sendMail({
-    from: sender,
-    to: receipients,
-    subject: subjet,
-    html: body,
-  });
-};
+    console.log('Email sent: ', info);
+  })
+}
