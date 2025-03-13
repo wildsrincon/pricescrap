@@ -1,7 +1,6 @@
 import { Product } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
 
 interface Props {
   product: Product;
@@ -29,7 +28,7 @@ const ProductCard = ({ product }: Props) => {
           </p>
 
           <p className="text-black text-lg font-semibold">
-            <span>{product?.currency}</span>
+            <span>$&nbsp;</span>
             <span>{product?.currentPrice}</span>
           </p>
         </div>
